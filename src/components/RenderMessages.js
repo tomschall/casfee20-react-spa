@@ -90,6 +90,7 @@ export default class RenderMessages extends React.Component {
 
   // custom refetch to be passed to parent for refetching on event occurance
   refetch = async () => {
+    console.log('hier');
     if (!this.state.loading) {
       const resp = await this.state.refetch(this.getLastReceivedVars());
       if (resp.data) {
@@ -129,7 +130,8 @@ export default class RenderMessages extends React.Component {
     const { messages, newMessages, bottom } = this.state;
     // set refetch in parent component for refetching data whenever an event occurs
     if (!this.props.refetch && this.state.refetch) {
-      this.props.setRefetch(this.refetch);
+      console.log('RenderMessages setRefetch', this.props.setRefetch);
+      this.props.setRefetch({ refetch: this.refetch });
     }
     return (
       <div id="chatbox">

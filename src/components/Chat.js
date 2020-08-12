@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Subscription } from 'react-apollo';
 import RenderMessages from './RenderMessages';
 import gql from 'graphql-tag';
@@ -23,46 +23,28 @@ const emitOnlineEvent = gql`
   }
 `;
 
-class Chat extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: props.username,
-      refetch: null,
-    };
-  }
+function Chat(props) {
+  const [username, setUsername] = useState(props.username);
+  const [refetch, setRefetch] = useState(null);
 
-  setRefetch = (refetch) => {
-    this.setState({
-      refetch,
-    });
-    console.log('set state refetch!!');
-  };
-
-  render() {
-    const { refetch, username } = this.state;
-    return (
-      <div>
-        <Subscription subscription={subscribeToNewMessages}>
-          {({ data, error, loading }) => {
-            if (error || (data && data.message === null)) {
-              console.error(error || `Unexpected response: ${data}`);
-              return 'Error';
-            }
-            if (refetch) {
-              refetch();
-              console.log('refetch');
-            }
-            return null;
-          }}
-        </Subscription>
-        <RenderMessages
-          refetch={this.state.refetch}
-          setRefetch={this.setRefetch}
-        />
-      </div>
-    );
-  }
+  return (
+    <div>
+      <Subscription subscription={subscribeToNewMessages}>
+        {({ data, error, loading }) => {
+          if (error || (data && data.message === null)) {
+            console.error(error || `Unexpected response: ${data}`);
+            return 'Error';
+          }
+          if (refetch) {
+            refetch.refetch();
+            console.log('refetch', refetch);
+          }
+          return null;
+        }}
+      </Subscription>
+      <RenderMessages refetch={refetch} setRefetch={setRefetch} />
+    </div>
+  );
 }
 
 export default Chat;
