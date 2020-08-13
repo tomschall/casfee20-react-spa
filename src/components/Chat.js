@@ -35,8 +35,9 @@ function Chat(props) {
             console.error(error || `Unexpected response: ${data}`);
             return 'Error';
           }
+          console.log('Subscription', data);
           if (refetch) {
-            refetch.refetch();
+            refetch();
             console.log('refetch', refetch);
           }
           return null;

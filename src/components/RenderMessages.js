@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import '../App.js';
@@ -22,19 +22,16 @@ const fetchMessages = gql`
   }
 `;
 
-export default class RenderMessages extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      messages: [],
-      newMessages: [],
-      error: null,
-    };
-  }
+export default function RenderMessages(props) {
+  const [messages, setMessages] = useState([]);
+  const [newMessages, setNewMessages] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState();
+  const [refetchState, setRefetch] = useState();
+  const [bottom, setBottom] = useState();
 
   // get appropriate query variables
-  getLastReceivedVars = () => {
-    const { messages, newMessages } = this.state;
+  const getLastReceivedVars = () => {
     if (newMessages.length === 0) {
       if (messages.length !== 0) {
         return {
@@ -56,51 +53,48 @@ export default class RenderMessages extends React.Component {
   };
 
   // add new (unread) messages to state
-  addNewMessages = (messages) => {
-    const newMessages = [...this.state.newMessages];
+  const addNewMessages = (messages) => {
+    const newMessagesArr = [...newMessages];
     messages.forEach((m) => {
       // do not add new messages from self
       if (m.username !== this.props.username) {
-        newMessages.push(m);
+        newMessagesArr.push(m);
       }
     });
-    this.setState({
-      newMessages,
-    });
+    setNewMessages(newMessagesArr);
   };
 
   // add old (read) messages to state
-  addOldMessages = (messages) => {
-    const oldMessages = [...this.state.messages, ...messages];
-    this.setState({
-      messages: oldMessages,
-      newMessages: [],
-    });
+  const addOldMessages = (msgs) => {
+    const oldMessages = [...messages, ...msgs];
+    setMessages(oldMessages);
+    setNewMessages([]);
   };
 
   // add message to state when text is entered
-  mutationCallback = (message) => {
-    const messages = [...this.state.messages, ...this.state.newMessages];
-    messages.push(message);
-    this.setState({
-      messages,
-      newMessages: [],
-    });
+  const mutationCallback = (message) => {
+    const messagesArr = [...messages, ...newMessages];
+    messagesArr.push(message);
+    setMessages(messages);
+    setNewMessages([]);
   };
 
   // custom refetch to be passed to parent for refetching on event occurance
-  refetch = async () => {
+  const refetchData = async () => {
     console.log('hier');
-    if (!this.state.loading) {
-      const resp = await this.state.refetch(this.getLastReceivedVars());
+    if (!loading) {
+      const resp = await refetchState(getLastReceivedVars());
       if (resp.data) {
-        if (!this.isViewScrollable()) {
-          this.addOldMessages(resp.data.message);
+        if (!isViewScrollable()) {
+          console.log('is not scrollable');
+          addOldMessages(resp.data.message);
         } else {
           if (this.state.bottom) {
-            this.addOldMessages(resp.data.message);
+            console.log('this.state.bottom');
+            addOldMessages(resp.data.message);
           } else {
-            this.addNewMessages(resp.data.message);
+            console.log('!this.state.bottom');
+            addNewMessages(resp.data.message);
           }
         }
       }
@@ -108,7 +102,7 @@ export default class RenderMessages extends React.Component {
   };
 
   // check if the view is scrollable
-  isViewScrollable = () => {
+  const isViewScrollable = () => {
     const isInViewport = (elem) => {
       const bounding = elem.getBoundingClientRect();
       return (
@@ -126,53 +120,50 @@ export default class RenderMessages extends React.Component {
     return false;
   };
 
-  render() {
-    const { messages, newMessages, bottom } = this.state;
-    // set refetch in parent component for refetching data whenever an event occurs
-    if (!this.props.refetch && this.state.refetch) {
-      console.log('RenderMessages setRefetch', this.props.setRefetch);
-      this.props.setRefetch({ refetch: this.refetch });
-    }
-    return (
-      <div id="chatbox">
-        <Query query={fetchMessages} variables={this.getLastReceivedVars()}>
-          {({ data, loading, error, refetch }) => {
-            if (loading) {
-              return null;
-            }
-            if (error) {
-              return 'Error: ' + error;
-            }
-            // set refetch in local state to make a custom refetch
-            if (!this.state.refetch) {
-              this.setState({
-                refetch,
-              });
-            }
-            const receivedMessages = data.message;
-
-            // load all messages to state in the beginning
-            if (receivedMessages.length !== 0) {
-              if (messages.length === 0) {
-                this.addOldMessages(receivedMessages);
-              }
-            }
-
-            // return null; real rendering happens below
-            return null;
-          }}
-        </Query>
-        <ul>
-          {messages.map((m) => {
-            return (
-              <li key={m.id}>
-                <p>{m.username}</p>
-                <p>{m.text}</p>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    );
+  if (!props.refetch && refetchState) {
+    props.setRefetch(() => refetchData);
   }
+
+  return (
+    <div id="chatbox">
+      <Query query={fetchMessages} variables={getLastReceivedVars()}>
+        {({ data, loading, error, refetch }) => {
+          if (loading) {
+            return null;
+          }
+          if (error) {
+            return 'Error: ' + error;
+          }
+          // set refetch in local state to make a custom refetch
+          if (!refetchState) {
+            console.log('setRefetchState');
+            setRefetch(() => refetch);
+          }
+          const receivedMessages = data.message;
+          console.log('Query received Messages', data.message);
+          console.log('Query received Messages', getLastReceivedVars());
+
+          // load all messages to state in the beginning
+          if (receivedMessages.length !== 0) {
+            if (messages.length === 0) {
+              addOldMessages(receivedMessages);
+            }
+          }
+
+          // return null; real rendering happens below
+          return null;
+        }}
+      </Query>
+      <ul>
+        {messages.map((m) => {
+          return (
+            <li key={m.id}>
+              <p>{m.username}</p>
+              <p>{m.text}</p>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
