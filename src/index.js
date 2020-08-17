@@ -1,40 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ApolloProvider } from 'react-apollo';
-import App from './App';
-import ApolloClient from 'apollo-client';
+import { ApolloClient } from 'apollo-client';
+import { getMainDefinition } from 'apollo-utilities';
+import { ApolloLink, split } from 'apollo-link';
 import { HttpLink } from 'apollo-link-http';
 import { WebSocketLink } from 'apollo-link-ws';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { split } from 'apollo-link';
-import { getMainDefinition } from 'apollo-utilities';
 
-const scheme = (proto) => {
-  return window.location.protocol === 'https:' ? `${proto}s` : proto;
-};
-const HASURA_GRAPHQL_ENGINE_HOSTNAME = 'localhost:8080';
-export const GRAPHQL_ENDPOINT = `${scheme(
-  'http',
-)}://${HASURA_GRAPHQL_ENGINE_HOSTNAME}/v1/graphql`;
-export const WEBSOCKET_ENDPOINT = `${scheme(
-  'ws',
-)}://${HASURA_GRAPHQL_ENGINE_HOSTNAME}/v1/graphql`;
+import App from './App';
 
-// Make WebSocketLink with appropriate url
-const mkWsLink = (uri) => {
-  const splitUri = uri.split('//');
-  const subClient = new SubscriptionClient(WEBSOCKET_ENDPOINT, {
+const httpLink = new HttpLink({
+  uri: 'http://localhost:8080/v1/graphql',
+});
+
+const wsLink = new WebSocketLink({
+  uri: `ws://localhost:8080/v1/graphql`,
+  options: {
     reconnect: true,
-  });
-  return new WebSocketLink(subClient);
-};
+  },
+});
 
-// Make HttpLink
-const httpLink = new HttpLink({ uri: GRAPHQL_ENDPOINT });
-const wsLink = mkWsLink(GRAPHQL_ENDPOINT);
-const link = split(
-  // split based on operation type
+const terminatingLink = split(
   ({ query }) => {
     const { kind, operation } = getMainDefinition(query);
     return kind === 'OperationDefinition' && operation === 'subscription';
@@ -43,12 +30,13 @@ const link = split(
   httpLink,
 );
 
-// Instantiate client
+const link = ApolloLink.from([terminatingLink]);
+
+const cache = new InMemoryCache();
+
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache({
-    addTypename: false,
-  }),
+  cache,
 });
 
 ReactDOM.render(
