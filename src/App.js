@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import Chat from './components/Chat';
@@ -6,7 +7,11 @@ import Chat from './components/Chat';
 const App = () => {
   return (
     <div className="app">
-      <Chat />
+      <ApolloConsumer>
+        {(client) => {
+          return <Chat client={client} />;
+        }}
+      </ApolloConsumer>
     </div>
   );
 };

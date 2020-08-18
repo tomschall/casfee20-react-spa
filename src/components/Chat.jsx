@@ -22,7 +22,7 @@ const GET_MESSAGES = gql`
   }
 `;
 
-const Chat = () => {
+const Chat = (props) => {
   const [messages, setMessages] = useState([]);
   const [newMessages, setNewMessages] = useState([]);
   const [error, setError] = useState(null);
@@ -151,6 +151,7 @@ const Chat = () => {
               messages={messages}
               subscribeToMore={subscribeToMore}
               refetch={refetchData}
+              client={props.client}
             />
           );
         }}

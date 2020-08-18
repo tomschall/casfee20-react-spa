@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
+import OnlineUsers from './OnlineUsers';
 
 const MESSAGE_CREATED = gql`
   subscription {
@@ -8,6 +9,14 @@ const MESSAGE_CREATED = gql`
       username
       text
       timestamp
+    }
+  }
+`;
+
+const USER_IS_ONLINE = gql`
+  mutation($userId: Int!) {
+    update_user(_set: { last_seen: "now()" }, where: { id: { _eq: $userId } }) {
+      affected_rows
     }
   }
 `;
@@ -25,14 +34,27 @@ const Messages = (props) => {
         return null;
       },
     });
+
+    const interval = setInterval(async () => {
+      await props.client.mutate({
+        mutation: USER_IS_ONLINE,
+        variables: {
+          userId: 1,
+        },
+      });
+    }, 2000);
+
     return function cleanup() {
       console.log('component did unmount');
       unsubscribe();
+      clearInterval(interval);
     };
   }, []);
 
   return (
     <div id="chatbox">
+      <OnlineUsers userId={1} username={'Tom'} />
+      <hr></hr>
       <ul>
         {props.messages.map((m) => {
           return (
