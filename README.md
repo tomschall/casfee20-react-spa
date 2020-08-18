@@ -24,13 +24,17 @@ yarn start
 
 Install Hasura cli if not installed
 
+```
+npm install --global hasura-cli
+```
+
 Then run migration
 
 ```
 hasura migrate apply
 ```
 
--   [Fully working app](http://localhost:3000)
--   [Backend](http://localhost:8080/console)
+- [Fully working app](http://localhost:3000)
+- [Backend](http://localhost:8080/console)
 
 For a complete tutorial about data modelling, [check out this blog](https://hasura.io/blog/building-a-realtime-chat-app-with-graphql-subscriptions-d68cd33e73f).
