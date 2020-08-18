@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import Messages from './Messages';
+import ChatInput from './ChatInput';
 
 const GET_MESSAGES = gql`
   query($last_received_id: Int, $last_received_ts: timestamptz) {
@@ -147,12 +148,15 @@ const Chat = (props) => {
           }
 
           return (
-            <Messages
-              messages={messages}
-              subscribeToMore={subscribeToMore}
-              refetch={refetchData}
-              client={props.client}
-            />
+            <React.Fragment>
+              <Messages
+                messages={messages}
+                subscribeToMore={subscribeToMore}
+                refetch={refetchData}
+                client={props.client}
+              />
+              <ChatInput username={'yoman'} userId={3} />
+            </React.Fragment>
           );
         }}
       </Query>
