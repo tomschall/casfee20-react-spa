@@ -31,19 +31,17 @@ const ChatInput = (props) => {
   const form = (sendMessage) => {
     return (
       <form onSubmit={sendMessage}>
-        <div className="chatinput_wrapper">
+        <div>
           <input
-            className="textbox chatinput"
             value={text}
             autoFocus={true}
             onChange={(e) => {
               handleTyping(e.target.value);
             }}
             autoComplete="off"
+            placeholder="Ciao"
           />
-          <button className="sendButton buttonTextbox" onClick={sendMessage}>
-            Send
-          </button>
+          <button onClick={sendMessage}>Send</button>
         </div>
       </form>
     );

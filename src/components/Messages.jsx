@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import gql from 'graphql-tag';
+import moment from 'moment';
 
 const MESSAGE_CREATED = gql`
   subscription {
@@ -42,18 +43,33 @@ const Messages = (props) => {
     scrollToBottom();
   });
 
+  const renderAvatar = (user) => {
+    let image;
+    if (user === 'roli') {
+      image = <img class="avatar" src="https://placeimg.com/50/50/people?1" />;
+    } else {
+      image = <img class="avatar" src="https://placeimg.com/50/50/people?2" />;
+    }
+    return image;
+  };
+
   return (
-    <div id="chatbox">
-      <ul>
+    <div class="container">
+      <div class="chat-container">
         {props.messages.map((m) => {
           return (
-            <li key={m.id}>
-              <p>{m.username}</p>
+            <div class="message">
+              {renderAvatar(m.username)}
+
+              <div class="datetime">
+                {m.username}: <i>{moment(m.timestamp).fromNow()}</i>
+              </div>
               <p>{m.text}</p>
-            </li>
+            </div>
           );
         })}
-      </ul>
+      </div>
+
       <div ref={messagesEndRef} />
     </div>
   );
