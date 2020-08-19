@@ -4,7 +4,6 @@ import { Query } from 'react-apollo';
 import { useRecoilState } from 'recoil';
 import { messagesState, newMessagesState } from '../atom.js';
 import Messages from './Messages';
-import ChatInput from './ChatInput';
 
 const GET_MESSAGES = gql`
   query($last_received_id: Int, $last_received_ts: timestamptz) {
@@ -31,7 +30,6 @@ const Chat = (props) => {
   const [bottom, setBottom] = useState();
   const [messages, setMessages] = useRecoilState(messagesState);
   const [newMessages, setNewMessages] = useRecoilState(newMessagesState);
-  const [nameValue, setNameValue] = useState();
 
   useEffect(() => {
     console.log('component Chat did mount');
@@ -40,14 +38,6 @@ const Chat = (props) => {
       console.log('component Chat did unmount');
     };
   }, []);
-
-  const handleNameChange = (event) => {
-    setNameValue(event.target.value);
-  };
-
-  const handleNameSubmit = (event) => {
-    event.preventDefault();
-  };
 
   // get appropriate query variables
   const getLastReceivedVars = () => {
@@ -159,24 +149,12 @@ const Chat = (props) => {
 
           return (
             <React.Fragment>
-              <form onSubmit={handleNameSubmit}>
-                <label>
-                  Name:
-                  <input
-                    type="text"
-                    value={nameValue}
-                    onChange={handleNameChange}
-                  />
-                </label>
-                <input type="submit" value="Submit" />
-              </form>
               <Messages
                 messages={messages}
                 subscribeToMore={subscribeToMore}
                 refetch={refetchData}
                 client={props.client}
               />
-              <ChatInput username={nameValue} userId={1} />
             </React.Fragment>
           );
         }}

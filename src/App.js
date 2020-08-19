@@ -3,7 +3,7 @@ import { ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import { RecoilRoot } from 'recoil';
-import Chat from './components/Chat';
+import ChatApp from './components/ChatApp';
 
 const App = () => {
   return (
@@ -11,7 +11,7 @@ const App = () => {
       <RecoilRoot>
         <ApolloConsumer>
           {(client) => {
-            return <Chat client={client} />;
+            return <ChatApp client={client} />;
           }}
         </ApolloConsumer>
       </RecoilRoot>

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import gql from 'graphql-tag';
-import OnlineUsers from './OnlineUsers';
 
 const MESSAGE_CREATED = gql`
   subscription {
@@ -13,48 +12,38 @@ const MESSAGE_CREATED = gql`
   }
 `;
 
-const USER_IS_ONLINE = gql`
-  mutation($userId: Int!) {
-    update_user(_set: { last_seen: "now()" }, where: { id: { _eq: $userId } }) {
-      affected_rows
-    }
-  }
-`;
-
 const Messages = (props) => {
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollIntoView();
+  };
+
   useEffect(() => {
     console.log('component did mount');
     const unsubscribe = props.subscribeToMore({
       document: MESSAGE_CREATED,
       updateQuery: (prev, { subscriptionData }) => {
         console.log('updateQuery', subscriptionData);
-
         props.refetch();
 
         return null;
       },
     });
 
-    const interval = setInterval(async () => {
-      await props.client.mutate({
-        mutation: USER_IS_ONLINE,
-        variables: {
-          userId: 1,
-        },
-      });
-    }, 2000);
-
     return function cleanup() {
       console.log('component did unmount');
       unsubscribe();
-      clearInterval(interval);
     };
   }, []);
 
+  useEffect(() => {
+    console.log('update');
+    scrollToBottom();
+  });
+
   return (
     <div id="chatbox">
-      <OnlineUsers userId={1} username={'Tom'} />
-      <hr></hr>
       <ul>
         {props.messages.map((m) => {
           return (
@@ -65,6 +54,7 @@ const Messages = (props) => {
           );
         })}
       </ul>
+      <div ref={messagesEndRef} />
     </div>
   );
 };
