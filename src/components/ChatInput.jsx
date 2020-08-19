@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mutation } from 'react-apollo';
 import gql from 'graphql-tag';
+import { useRecoilState } from 'recoil';
+import { messagesState, newMessagesState } from '../atom.js';
 
 import '../App.css';
 
@@ -19,6 +21,8 @@ const INSERT_MESSAGE = gql`
 
 const ChatInput = (props) => {
   const [text, setText] = useState('');
+  const [messages, setMessages] = useRecoilState(messagesState);
+  const [newMessages, setNewMessages] = useRecoilState(newMessagesState);
 
   const handleTyping = (text) => {
     setText(text);
@@ -45,6 +49,13 @@ const ChatInput = (props) => {
     );
   };
 
+  const updateMessages = (message) => {
+    const messagesArr = [...messages, ...newMessages];
+    messagesArr.push(message);
+    setMessages(messagesArr);
+    setNewMessages([]);
+  };
+
   return (
     <Mutation
       mutation={INSERT_MESSAGE}
@@ -55,7 +66,13 @@ const ChatInput = (props) => {
         },
       }}
       update={(cache, { data: { insert_message } }) => {
-        console.log('insert_message', insert_message);
+        const message = {
+          id: insert_message.returning[0].id,
+          timestamp: insert_message.returning[0].timestamp,
+          username: insert_message.returning[0].username,
+          text: insert_message.returning[0].text,
+        };
+        updateMessages(message);
       }}
     >
       {(insert_message, { data, loading, error }) => {

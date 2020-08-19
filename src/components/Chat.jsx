@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
+import { useRecoilState } from 'recoil';
+import { messagesState, newMessagesState } from '../atom.js';
 import Messages from './Messages';
 import ChatInput from './ChatInput';
 
@@ -24,12 +26,11 @@ const GET_MESSAGES = gql`
 `;
 
 const Chat = (props) => {
-  const [messages, setMessages] = useState([]);
-  const [newMessages, setNewMessages] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState();
   const [refetchState, setRefetch] = useState();
   const [bottom, setBottom] = useState();
+  const [messages, setMessages] = useRecoilState(messagesState);
+  const [newMessages, setNewMessages] = useRecoilState(newMessagesState);
 
   useEffect(() => {
     console.log('component Chat did mount');
@@ -81,7 +82,7 @@ const Chat = (props) => {
 
   const refetchData = async () => {
     console.log('hier');
-    if (!loading && refetchState) {
+    if (refetchState) {
       const resp = await refetchState(getLastReceivedVars());
       if (resp.data) {
         console.log('resp.data', resp.data);
@@ -129,7 +130,7 @@ const Chat = (props) => {
           }
 
           if (loading) {
-            return <span>Loading ...</span>;
+            return null;
           }
 
           if (!refetchState) {
@@ -155,7 +156,7 @@ const Chat = (props) => {
                 refetch={refetchData}
                 client={props.client}
               />
-              <ChatInput username={'yoman'} userId={3} />
+              <ChatInput username={'tom'} userId={1} />
             </React.Fragment>
           );
         }}

@@ -1,8 +1,11 @@
 import { atom } from 'recoil';
 
-export const refetchState = atom({
-  key: 'refetchState',
-  default: {
-    refetch: null,
-  },
+export const messagesState = atom({
+  key: 'messagesState',
+  default: [],
+});
+
+export const newMessagesState = atom({
+  key: 'newMessagesState',
+  default: [],
 });

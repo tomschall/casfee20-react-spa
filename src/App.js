@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
+import { RecoilRoot } from 'recoil';
 import Chat from './components/Chat';
 
 const App = () => {
   return (
     <div className="app">
-      <ApolloConsumer>
-        {(client) => {
-          return <Chat client={client} />;
-        }}
-      </ApolloConsumer>
+      <RecoilRoot>
+        <ApolloConsumer>
+          {(client) => {
+            return <Chat client={client} />;
+          }}
+        </ApolloConsumer>
+      </RecoilRoot>
     </div>
   );
 };
